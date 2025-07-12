@@ -1,15 +1,6 @@
-//rnfe
-import {
-  View,
-  Text,
-  Button,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  FlatList,
-} from "react-native";
-import { useRouter } from "expo-router";
+import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl } from "react-native";
 import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import { MealAPI } from "../../services/mealAPI";
 import { homeStyles } from "../../assets/styles/home.styles";
 import { Image } from "expo-image";
@@ -17,8 +8,9 @@ import { COLORS } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import CategoryFilter from "../../components/CategoryFilter";
 import RecipeCard from "../../components/RecipeCard";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(() => resolve(), ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -59,7 +51,7 @@ const HomeScreen = () => {
       const transformedFeatured = MealAPI.transformMealData(featuredMeal);
       setFeaturedRecipe(transformedFeatured);
     } catch (error) {
-      console.log("Error loadinig the data", error);
+      console.log("Error loading the data", error);
     } finally {
       setLoading(false);
     }
@@ -85,7 +77,7 @@ const HomeScreen = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await sleep(2000);
+    // await sleep(2000);
     await loadData();
     setRefreshing(false);
   };
@@ -93,6 +85,8 @@ const HomeScreen = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  if (loading && !refreshing) return <LoadingSpinner message="Loading delicions recipes..." />;
 
   return (
     <View style={homeStyles.container}>
@@ -107,19 +101,28 @@ const HomeScreen = () => {
         }
         contentContainerStyle={homeStyles.scrollContent}
       >
-        {/* ANIMAL ICONS */}
+        {/*  ANIMAL ICONS */}
         <View style={homeStyles.welcomeSection}>
           <Image
             source={require("../../assets/images/lamb.png")}
-            style={{ width: 100, height: 100 }}
+            style={{
+              width: 100,
+              height: 100,
+            }}
           />
           <Image
             source={require("../../assets/images/chicken.png")}
-            style={{ width: 100, height: 100 }}
+            style={{
+              width: 100,
+              height: 100,
+            }}
           />
           <Image
             source={require("../../assets/images/pork.png")}
-            style={{ width: 100, height: 100 }}
+            style={{
+              width: 100,
+              height: 100,
+            }}
           />
         </View>
 
@@ -138,7 +141,6 @@ const HomeScreen = () => {
                   contentFit="cover"
                   transition={500}
                 />
-
                 <View style={homeStyles.featuredOverlay}>
                   <View style={homeStyles.featuredBadge}>
                     <Text style={homeStyles.featuredBadgeText}>Featured</Text>
@@ -151,35 +153,17 @@ const HomeScreen = () => {
 
                     <View style={homeStyles.featuredMeta}>
                       <View style={homeStyles.metaItem}>
-                        <Ionicons
-                          name="time-outline"
-                          size={16}
-                          color={COLORS.white}
-                        />
-                        <Text style={homeStyles.metaText}>
-                          {featuredRecipe.cookTime}
-                        </Text>
+                        <Ionicons name="time-outline" size={16} color={COLORS.white} />
+                        <Text style={homeStyles.metaText}>{featuredRecipe.cookTime}</Text>
                       </View>
                       <View style={homeStyles.metaItem}>
-                        <Ionicons
-                          name="people-outline"
-                          size={16}
-                          color={COLORS.white}
-                        />
-                        <Text style={homeStyles.metaText}>
-                          {featuredRecipe.servings}
-                        </Text>
+                        <Ionicons name="people-outline" size={16} color={COLORS.white} />
+                        <Text style={homeStyles.metaText}>{featuredRecipe.servings}</Text>
                       </View>
                       {featuredRecipe.area && (
                         <View style={homeStyles.metaItem}>
-                          <Ionicons
-                            name="location-outline"
-                            size={16}
-                            color={COLORS.white}
-                          />
-                          <Text style={homeStyles.metaText}>
-                            {featuredRecipe.area}
-                          </Text>
+                          <Ionicons name="location-outline" size={16} color={COLORS.white} />
+                          <Text style={homeStyles.metaText}>{featuredRecipe.area}</Text>
                         </View>
                       )}
                     </View>
@@ -212,18 +196,13 @@ const HomeScreen = () => {
               columnWrapperStyle={homeStyles.row}
               contentContainerStyle={homeStyles.recipesGrid}
               scrollEnabled={false}
+              // ListEmptyComponent={}
             />
           ) : (
             <View style={homeStyles.emptyState}>
-              <Ionicons
-                name="restaurant-outline"
-                size={64}
-                color={COLORS.textLight}
-              />
+              <Ionicons name="restaurant-outline" size={64} color={COLORS.textLight} />
               <Text style={homeStyles.emptyTitle}>No recipes found</Text>
-              <Text style={homeStyles.emptyDescription}>
-                Try a different category
-              </Text>
+              <Text style={homeStyles.emptyDescription}>Try a different category</Text>
             </View>
           )}
         </View>
@@ -231,5 +210,4 @@ const HomeScreen = () => {
     </View>
   );
 };
-
 export default HomeScreen;

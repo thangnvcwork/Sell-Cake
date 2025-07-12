@@ -52,6 +52,7 @@ const RecipeDetailScreen = () => {
 
           setRecipe(recipeWithVideo);
         }
+        // console.log("Recipe loaded:", recipeId);
       } catch (error) {
         console.error("Error loading recipe detail:", error);
       } finally {
