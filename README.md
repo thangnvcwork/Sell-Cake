@@ -6,3 +6,14 @@
 //npm i -D drizzle-kit
 //npx drizzle-kit generate
 //npx drizzle-kit migrate
+
+
+//front end
+//npx create-expo-app@latest .
+//npx expo
+//npm install @clerk/clerk-expo
+//npm install expo-secure-store
+
+
+//npm install react-native-toast-message
+//npx expo install expo-linear-gradient
