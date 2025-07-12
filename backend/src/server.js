@@ -1,16 +1,57 @@
 import express from "express";
+import Stripe from "stripe";
 import { ENV } from "./config/env.js";
 import { db } from "./config/db.js";
-import { favoritesTable } from "./db/schema.js";
+import { favoritesTable, ordersTable } from "./db/schema.js";
 import { and, eq } from "drizzle-orm";
 import job from "./config/cron.js";
 
 const app = express();
 const PORT = ENV.PORT || 5001;
 
-if(ENV.NODE_ENV === "production") job.start()
+if (ENV.NODE_ENV === "production") job.start();
 
 app.use(express.json());
+
+if (!ENV.STRIPE_SECRET_KEY) {
+  throw new Error("Missing STRIPE_SECRET_KEY in env");
+}
+
+const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-04-10",
+});
+
+app.post("/api/create-payment-intent", async (req, res) => {
+  const { userId, recipeId, amount, currency } = req.body;
+
+  try {
+    // 1. Tạo PaymentIntent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount, // ví dụ: 5000 = $50.00
+      currency,
+      payment_method_types: ["card"],
+    });
+
+    // 2. Lưu vào database
+    await db.insert(ordersTable).values({
+      userId,
+      recipeId,
+      amount,
+      currency,
+      paymentIntentId: paymentIntent.id,
+      status: "pending",
+    });
+
+    // 3. Trả client_secret để frontend xác nhận thanh toán
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (err) {
+    console.error("Stripe error:", err);
+    res.status(500).json({ error: "Tạo thanh toán thất bại" });
+  }
+});
+
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true });
